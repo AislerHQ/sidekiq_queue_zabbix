@@ -4,6 +4,7 @@
 namespace=
 redishost=
 redisport=
+redisauth=
 queue=
 redisdb=0
 REDIS_CLI="redis-cli"
@@ -34,13 +35,14 @@ cat <<EOF
 @Email: hungnt.it@gmail.com
 Usage: $0 CMD [OPTION]
 CMD:
-  discovery:show all queues of namespace. Usage: $0 discovery [-h redishost] [ -p redisport] -n namespace
-  queuesize:show size of queue. Usage: $0 queuesize  [-h redishost] [ -p redisport]  -n namespace -q queuename
+  discovery:show all queues of namespace. Usage: $0 discovery [-h redishost] [ -p redisport] [ -a redisauth] -n namespace
+  queuesize:show size of queue. Usage: $0 queuesize  [-h redishost] [ -p redisport] [ -a redisauth]  -n namespace -q queuename
   ?|--help: show usage
 OPTIONS:
   -d|--db: database number
   -h|--redis-host: redis host
   -p|--redis-port: redis port
+  -a|--redis-auth: redis password / auth
   -n|--namespace: namespace of sidekiq. -n all for all discovery all queues and anything else for specified namespace. Example -n rail , -n default
   -q|--queue: queue name
 EOF
@@ -145,6 +147,12 @@ case $key in
       shift # past argument
     fi
     ;;
+    -a|--redis-auth)
+    if [ "$HAVE_VALUE" == "true" ];then
+      redisauth="$2"
+      shift # past argument
+    fi
+    ;;
     *)
     echo "option wrong. Type $0 -h to show usage"
 
@@ -160,6 +168,9 @@ if [ ! -x ${redishost} ];then
 fi
 if [ ! -x ${redisport} ];then
   REDIS_CLI_CMD="${REDIS_CLI_CMD} -p ${redisport}"
+fi
+if [ ! -x ${redisauth} ];then
+  REDIS_CLI_CMD="${REDIS_CLI_CMD} -a ${redisauth}"
 fi
 
 case $cmd in
